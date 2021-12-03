@@ -1,5 +1,9 @@
+import { useRouter } from 'next/router'
+
 const CoffeeStore = () => {
-  return (<div>Coffee Store Page</div>)
+  const router = useRouter()
+  console.log("router", router);
+  return (<div>Coffee Store Page {router.query.id}</div>)
 }
 
 export default CoffeeStore;
