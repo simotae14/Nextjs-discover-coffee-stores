@@ -33,12 +33,16 @@ export async function getStaticPaths() {
         }
       }
     ],
-    fallback: false,
+    fallback: true,
   };
 }
 
 const CoffeeStore = (props) => {
   const router = useRouter()
+  console.log("router", router);
+  if (router.isFallback) {
+    return <div>Loading</div>
+  }
   return (
     <div>
       Coffee Store Page {router.query.id}
