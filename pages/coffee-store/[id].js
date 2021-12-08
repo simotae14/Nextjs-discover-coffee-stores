@@ -1,7 +1,43 @@
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 
-const CoffeeStore = () => {
+import coffeeStoresData from '../../data/coffee-stores.json'
+
+export async function getStaticProps(staticProps) {
+  const params = staticProps.params;
+  return {
+    props: {
+      coffeeStore: coffeeStoresData.find(coffeeStore => {
+        return coffeeStore.id.toString() === params.id; // dynamic ID
+      })
+    }, // will be passed to the page component as props
+  }
+}
+
+export async function getStaticPaths() {
+  return {
+    paths: [
+      {
+        params: {
+          id: '0'
+        }
+      },
+      {
+        params: {
+          id: '1'
+        }
+      },
+      {
+        params: {
+          id: '300'
+        }
+      }
+    ],
+    fallback: false,
+  };
+}
+
+const CoffeeStore = (props) => {
   const router = useRouter()
   return (
     <div>
@@ -15,6 +51,8 @@ const CoffeeStore = () => {
       }}>
         <a>Go to page dynamic</a>
       </Link>
+      <p>{props.coffeeStore.address}</p>
+      <p>{props.coffeeStore.name}</p>
     </div>
   )
 }
