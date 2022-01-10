@@ -5,8 +5,6 @@ import styles from '../styles/Home.module.css'
 import Banner from '../components/banner'
 import Card from '../components/card'
 
-import coffeeStoresData from '../data/coffee-stores.json'
-
 export async function getStaticProps(context) {
   const options = {
     method: 'GET',
@@ -15,15 +13,14 @@ export async function getStaticProps(context) {
       Authorization: process.env.NEXT_PUBLIC_FOURSQUARE_API_KEY
     }
   };
-  fetch(
-    'https://api.foursquare.com/v3/places/nearby?ll=45.694583,9.679952&query=caffetteria',
+  const response = await fetch(
+    'https://api.foursquare.com/v3/places/search?query=caffe&ll=45.694583%2C9.679952&fields=fsq_id%2Cname%2Cphotos&limit=6',
     options
   )
-    .then(response => response.json())
-    .then(data => console.log(data));
+  const data = await response.json();
   return {
     props: {
-      coffeeStores: coffeeStoresData
+      coffeeStores: data?.results
     }, // will be passed to the page component as props
   }
 }
@@ -55,18 +52,21 @@ export default function Home({ coffeeStores }) {
         </div>
         { coffeeStores.length > 0 && (
           <>
-            <h2 className={styles.heading2}>Toronto stores</h2>
+            <h2 className={styles.heading2}>Bergamo stores</h2>
             <div className={styles.cardLayout}>
             {
-              coffeeStores.map(({id, name, imgUrl}) => (
+              coffeeStores.map(({fsq_id: id, name, photos}) => {
+                const imageUrl = photos?.length > 0 ? `${photos?.[0]?.prefix}260x160${photos?.[0]?.suffix}` : 'https://via.placeholder.com/260x160';
+                console.log('imageUrl', imageUrl);
+                return (
                 <Card
                   key={id}
                   name={name}
-                  imgUrl={imgUrl}
+                  imgUrl={imageUrl}
                   href={`/coffee-store/${id}`}
                   className={styles.card}
                 />
-              ))
+              )})
             }
             </div>
           </>
