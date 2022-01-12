@@ -5,24 +5,28 @@ import Image from 'next/image'
 
 import cls from 'classnames'
 
-import coffeeStoresData from '../../data/coffee-stores.json'
 import styles from '../../styles/coffee-store.module.css'
+import { fetchCoffeeStores } from '../../lib/coffee-stores'
 
 export async function getStaticProps(staticProps) {
   const params = staticProps.params;
+  console.log("params", params);
+  const coffeeStores = await fetchCoffeeStores();
+
   return {
     props: {
-      coffeeStore: coffeeStoresData.find(coffeeStore => {
-        return coffeeStore.id.toString() === params.id; // dynamic ID
+      coffeeStore: coffeeStores.find(({fsq_id: coffeStoreId}) => {
+        return coffeStoreId.toString() === params.id; // dynamic ID
       })
     }, // will be passed to the page component as props
   }
 }
 
 export async function getStaticPaths() {
-  const paths = coffeeStoresData.map(coffeeStore => ({
+  const coffeeStores = await fetchCoffeeStores();
+  const paths = coffeeStores.map(({fsq_id: coffeStoreId}) => ({
     params: {
-      id: coffeeStore.id.toString(),
+      id: coffeStoreId.toString(),
     }
   }))
   return {
@@ -36,12 +40,11 @@ const CoffeeStore = (props) => {
   if (router.isFallback) {
     return <div>Loading</div>
   }
+  console.log(props.coffeeStore)
   const {
-    address,
-    name,
-    neighbourhood,
-    imgUrl
+    name, photos, location
   } = props.coffeeStore;
+  const imgUrl = photos?.length > 0 ? `${photos?.[0]?.prefix}260x160${photos?.[0]?.suffix}` : 'https://via.placeholder.com/260x160';
 
   const handleUpvoteButton = () => {
     console.log('handle upvote');
@@ -78,17 +81,20 @@ const CoffeeStore = (props) => {
               height="24"
               alt="Icon places"
             ></Image>
-            <p className={styles.text}>{address}</p>
+            <p className={styles.text}>{location?.address}</p>
           </div>
-          <div className={styles.iconWrapper}>
-            <Image
-              src="/static/icons/nearMe.svg"
-              width="24"
-              height="24"
-              alt="Icon near me"
-            ></Image>
-            <p className={styles.text}>{neighbourhood}</p>
-          </div>
+          {
+            location?.neighborhood?.[0] && (
+            <div className={styles.iconWrapper}>
+              <Image
+                src="/static/icons/nearMe.svg"
+                width="24"
+                height="24"
+                alt="Icon near me"
+              ></Image>
+              <p className={styles.text}>{location.neighborhood[0]}</p>
+            </div>
+          )}
           <div className={styles.iconWrapper}>
             <Image
               src="/static/icons/star.svg"
